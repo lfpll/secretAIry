@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Task } from '../types';
 
 type TabType = 'active' | 'future' | 'done';
@@ -48,6 +48,14 @@ const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
   const [plannedDate, setPlannedDate] = useState<string>(
     task.plannedDate ? task.plannedDate.toISOString().split('T')[0] : ''
   );
+
+  // Prevent body scrolling when popup is open
+  useEffect(() => {
+    document.body.classList.add('popup-open');
+    return () => {
+      document.body.classList.remove('popup-open');
+    };
+  }, []);
 
   const handleDayToggle = (day: WeekDay) => {
     if (selectedDays.includes(day)) {

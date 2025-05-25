@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Task } from '../types';
 
 interface UrgentPopupProps {
@@ -14,6 +14,14 @@ const UrgentPopup: React.FC<UrgentPopupProps> = ({
   onComplete,
   onRemove,
 }) => {
+  // Prevent body scrolling when popup is open
+  useEffect(() => {
+    document.body.classList.add('popup-open');
+    return () => {
+      document.body.classList.remove('popup-open');
+    };
+  }, []);
+
   return (
     <>
       <div className="popup-overlay" onClick={onClose}></div>
