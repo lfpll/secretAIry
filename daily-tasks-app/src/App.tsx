@@ -94,59 +94,53 @@ function App(): React.JSX.Element {
         
         <div className="content-area">
           <DragDropContext onDragEnd={handleDragEnd}>
-            {state.activeTab === 'active' && (
-              <div id="active-tasks" className="tab-content">
-                <div className="add-task">
-                  <button 
-                    className="add-task-btn" 
-                    onClick={() => showAddTaskForm('active')}
-                  >
-                    + Add New Task
-                  </button>
-                </div>
-                
-                <TaskList
-                  tasks={state.activeTasks}
-                  section="active"
-                  onComplete={completeTask}
-                  onEdit={editTask}
-                  onDelete={deleteTask}
-                  droppableId="activeTasks"
-                />
+            <div id="active-tasks" className="tab-content" style={{ display: state.activeTab === 'active' ? 'block' : 'none' }}>
+              <div className="add-task">
+                <button 
+                  className="add-task-btn" 
+                  onClick={() => showAddTaskForm('active')}
+                >
+                  + Add New Task
+                </button>
               </div>
-            )}
+              
+              <TaskList
+                tasks={state.activeTasks}
+                section="active"
+                onComplete={completeTask}
+                onEdit={editTask}
+                onDelete={deleteTask}
+                droppableId="activeTasks"
+              />
+            </div>
             
-            {state.activeTab === 'future' && (
-              <div id="future-tasks" className="tab-content future-section">
-                <div className="add-task">
-                  <button 
-                    className="add-task-btn" 
-                    onClick={() => showAddTaskForm('future')}
-                  >
-                    + Add Future Task
-                  </button>
-                </div>
-                
-                <TaskList
-                  tasks={state.futureTasks}
-                  section="future"
-                  onActivate={moveToActive}
-                  onEdit={editTask}
-                  onDelete={deleteTask}
-                  droppableId="futureTasks"
-                />
+            <div id="future-tasks" className="tab-content future-section" style={{ display: state.activeTab === 'future' ? 'block' : 'none' }}>
+              <div className="add-task">
+                <button 
+                  className="add-task-btn" 
+                  onClick={() => showAddTaskForm('future')}
+                >
+                  + Add Future Task
+                </button>
               </div>
-            )}
+              
+              <TaskList
+                tasks={state.futureTasks}
+                section="future"
+                onActivate={moveToActive}
+                onEdit={editTask}
+                onDelete={deleteTask}
+                droppableId="futureTasks"
+              />
+            </div>
             
-            {state.activeTab === 'done' && (
-              <div id="done-tasks" className="tab-content done-section">
-                <TaskList
-                  tasks={state.doneTasks}
-                  section="done"
-                  droppableId="doneTasks"
-                />
-              </div>
-            )}
+            <div id="done-tasks" className="tab-content done-section" style={{ display: state.activeTab === 'done' ? 'block' : 'none' }}>
+              <TaskList
+                tasks={state.doneTasks}
+                section="done"
+                droppableId="doneTasks"
+              />
+            </div>
           </DragDropContext>
         </div>
       </div>
