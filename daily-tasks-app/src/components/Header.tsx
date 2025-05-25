@@ -27,18 +27,9 @@ const Header: React.FC = () => {
 
   return (
     <header className="header">
-      <div className="header-content">
-        <h1>Daily Tasks</h1>
-        <p>Remember your why, prioritize by urgency</p>
-      </div>
-      {isOffline && (
-        <div className="offline-indicator">
-          🔄 Offline Mode - Using Local Data
-          {pendingOpsCount > 0 && (
-            <span className="pending-ops">
-              ({pendingOpsCount} pending sync{pendingOpsCount !== 1 ? 's' : ''})
-            </span>
-          )}
+      {isOffline && pendingOpsCount > 0 && (
+        <div className="sync-indicator">
+          🔄 {pendingOpsCount}
         </div>
       )}
     </header>
