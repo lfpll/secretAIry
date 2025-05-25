@@ -1,0 +1,938 @@
+This is my definition of my app
+
+```
+# Daily Tasks App - How It Works & Design
+## Core Concept
+A drag-and-drop task list that helps you remember why you're doing things, with smart urgency that grows over time.
+## How It Works
+### Task Structure
+Each task has two parts:
+- Task title (e.g., "meditation", "clean the kitchen", "call your sister")
+- Why description (the deeper purpose/motivation behind it)
+### Smart Urgency System
+- Tasks automatically track how long it's been since completion
+- Visual urgency: Both task title AND why description gradually increase in text size as time passes
+- Different tasks have different urgency curves (exercise gets urgent faster than calling family)
+- When urgency reaches critical level: popup appears saying "HEY you really should do this or remove/delegate it"
+### Task Types
+1. Regular tasks: Reset timer after completion, return to small text
+2. One-time tasks: Move to "Done" section after completion
+### User Experience
+- Main view: Scrollable list with varying text sizes showing current priorities
+- Drag & drop: Reorder tasks based on energy/preference
+- Completion: Satisfying moment with personalized message before task resets/moves
+- Done section: Journal of accomplishments showing completion history
+## Design Elements
+### Visual Hierarchy
+- Text size indicates urgency (whispers to shouts)
+- Both task name and motivation scale together
+- Clean, scannable interface focusing attention on what matters most
+### Interaction Flow
+1. Adding tasks: User writes task + app asks "why are you doing this?"
+2. Daily use: Scan list, drag to reorder, tap to complete
+3. Completion: Brief celebration message, then reset or archive
+4. Review: Check "Done" section for motivation and progress tracking
+### Key Features
+- No rigid scheduling - flexible to daily energy and mood
+- Motivation always visible alongside the task
+- Progressive urgency prevents important things from being forgotten
+- Accomplishment tracking for positive reinforcement
+```
+
+This is the code in html
+
+```
+                <div id="done-tasks" class="tab-content done-section" style="display: none;">
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <div class="task-title">Morning workout</div>
+                            <div class="task-why">To feel energized and maintain physical health</div>
+                            <div class="completion-date">Completed today at 7:30 AM</div>
+                        </li>
+
+                        <li class="task-item">
+                            <div class="task-title">Review budget</div>
+                            <div class="task-why">To stay on track with financial goals and reduce money stress</div>
+                            <div class="completion-date">Completed yesterday at 2:15 PM</div>
+                        </li>
+
+                        <li class="task-item">
+                            <div class="task-title">Plan weekend trip</div>
+                            <div class="task-why">To create quality time with friends and make memories</div>
+                            <div class="completion-date">Completed 2 days ago</div>
+                        </li>
+                    </ul>
+                </div><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tasks - Remember Your Why</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+
+        .tab.active {
+            background: white;
+            color: #495057;
+            position: relative;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .content-area {
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .add-task {
+            margin-bottom: 30px;
+        }
+
+        .add-task-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border-left: 4px solid transparent;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task-item:hover {
+            background: #e9ecef;
+            transform: translateX(10px);
+        }
+
+        .task-item.dragging {
+            cursor: grabbing;
+            transform: rotate(5deg);
+            opacity: 0.8;
+        }
+
+        /* Urgency levels */
+        .task-item.low-urgency {
+            border-left-color: #28a745;
+        }
+
+        .task-item.medium-urgency {
+            border-left-color: #ffc107;
+        }
+
+        .task-item.high-urgency {
+            border-left-color: #fd7e14;
+        }
+
+        .task-item.critical-urgency {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            transition: font-size 0.3s ease;
+        }
+
+        .task-why {
+            color: #6c757d;
+            font-style: italic;
+            transition: font-size 0.3s ease;
+        }
+
+        /* Dynamic sizing based on urgency */
+        .low-urgency .task-title { font-size: 1rem; }
+        .low-urgency .task-why { font-size: 0.85rem; }
+
+        .medium-urgency .task-title { font-size: 1.1rem; }
+        .medium-urgency .task-why { font-size: 0.95rem; }
+
+        .high-urgency .task-title { font-size: 1.25rem; }
+        .high-urgency .task-why { font-size: 1.05rem; }
+
+        .critical-urgency .task-title { font-size: 1.4rem; }
+        .critical-urgency .task-why { font-size: 1.15rem; }
+
+        .task-actions {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .complete-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .urgency-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 15px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .low-urgency .urgency-indicator {
+            background: #28a745;
+        }
+
+        .medium-urgency .urgency-indicator {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .high-urgency .urgency-indicator {
+            background: #fd7e14;
+        }
+
+        .critical-urgency .urgency-indicator {
+            background: #dc3545;
+        }
+
+        .future-section .task-item {
+            background: #f8f9ff;
+            border-left: 4px solid #6c5ce7;
+            opacity: 0.9;
+        }
+
+        .future-section .task-item:hover {
+            background: #f0f0ff;
+        }
+
+        .future-task .urgency-indicator {
+            display: none;
+        }
+
+        .activate-btn {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        .done-section .task-item {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            opacity: 0.8;
+        }
+
+        .done-section .task-title {
+            text-decoration: line-through;
+        }
+
+        .completion-date {
+            font-size: 0.8rem;
+            color: #757575;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .urgent-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 400px;
+            text-align: center;
+            display: none;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .popup-title {
+            color: #dc3545;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .popup-do-it {
+            background: #28a745;
+            color: white;
+        }
+
+        .popup-delegate {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .popup-remove {
+            background: #dc3545;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .task-item {
+                padding: 15px;
+            }
+
+            .task-actions {
+                position: static;
+                opacity: 1;
+                transform: none;
+                margin-top: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Daily Tasks</h1>
+            <p>Remember your why, prioritize by urgency</p>
+        </header>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('active')">Active Tasks</button>
+                <button class="tab" onclick="switchTab('future')">Future Tasks</button>
+                <button class="tab" onclick="switchTab('done')">Done</button>
+            </div>
+
+            <div class="content-area">
+                <div id="active-tasks" class="tab-content">
+                    <div class="add-task">
+                        <button class="add-task-btn" onclick="showAddTaskForm('active')">+ Add New Task</button>
+                    </div>
+
+                    <ul class="task-list" id="active-task-list">
+                        <li class="task-item critical-urgency" draggable="true" data-section="active">
+                            <div class="urgency-indicator">URGENT</div>
+                            <div class="task-title">Call your sister</div>
+                            <div class="task-why">Because family matters and she might need support right now</div>
+                            <div class="task-actions">
+                                <button class="action-btn complete-btn" title="Complete">✓</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item high-urgency" draggable="true" data-section="active">
+                            <div class="urgency-indicator">High</div>
+                            <div class="task-title">Meditation</div>
+                            <div class="task-why">To start the day with clarity and reduce anxiety</div>
+                            <div class="task-actions">
+                                <button class="action-btn complete-btn" title="Complete">✓</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item medium-urgency" draggable="true" data-section="active">
+                            <div class="urgency-indicator">Medium</div>
+                            <div class="task-title">Clean the kitchen</div>
+                            <div class="task-why">A clean space creates mental clarity and makes cooking enjoyable</div>
+                            <div class="task-actions">
+                                <button class="action-btn complete-btn" title="Complete">✓</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item low-urgency" draggable="true" data-section="active">
+                            <div class="urgency-indicator">Low</div>
+                            <div class="task-title">Read for 30 minutes</div>
+                            <div class="task-why">To expand knowledge and improve mental health through fiction</div>
+                            <div class="task-actions">
+                                <button class="action-btn complete-btn" title="Complete">✓</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item low-urgency" draggable="true" data-section="active">
+                            <div class="urgency-indicator">Low</div>
+                            <div class="task-title">Organize photo album</div>
+                            <div class="task-why">To preserve memories and create something beautiful for the family</div>
+                            <div class="task-actions">
+                                <button class="action-btn complete-btn" title="Complete">✓</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div id="future-tasks" class="tab-content future-section" style="display: none;">
+                    <div class="add-task">
+                        <button class="add-task-btn" onclick="showAddTaskForm('future')">+ Add Future Task</button>
+                    </div>
+
+                    <ul class="task-list" id="future-task-list">
+                        <li class="task-item future-task" draggable="true" data-section="future">
+                            <div class="task-title">Learn Spanish</div>
+                            <div class="task-why">To connect better with Spanish-speaking colleagues and travel experiences</div>
+                            <div class="task-actions">
+                                <button class="action-btn activate-btn" title="Move to Active">→</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item future-task" draggable="true" data-section="future">
+                            <div class="task-title">Redecorate living room</div>
+                            <div class="task-why">To create a more inspiring and comfortable space for relaxation</div>
+                            <div class="task-actions">
+                                <button class="action-btn activate-btn" title="Move to Active">→</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item future-task" draggable="true" data-section="future">
+                            <div class="task-title">Plan summer vacation</div>
+                            <div class="task-why">To create memorable experiences and quality time with family</div>
+                            <div class="task-actions">
+                                <button class="action-btn activate-btn" title="Move to Active">→</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+
+                        <li class="task-item future-task" draggable="true" data-section="future">
+                            <div class="task-title">Take cooking class</div>
+                            <div class="task-why">To improve culinary skills and enjoy healthier homemade meals</div>
+                            <div class="task-actions">
+                                <button class="action-btn activate-btn" title="Move to Active">→</button>
+                                <button class="action-btn edit-btn" title="Edit">✎</button>
+                                <button class="action-btn delete-btn" title="Delete">×</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <div class="task-title">Morning workout</div>
+                            <div class="task-why">To feel energized and maintain physical health</div>
+                            <div class="completion-date">Completed today at 7:30 AM</div>
+                        </li>
+
+                        <li class="task-item">
+                            <div class="task-title">Review budget</div>
+                            <div class="task-why">To stay on track with financial goals and reduce money stress</div>
+                            <div class="completion-date">Completed yesterday at 2:15 PM</div>
+                        </li>
+
+                        <li class="task-item">
+                            <div class="task-title">Plan weekend trip</div>
+                            <div class="task-why">To create quality time with friends and make memories</div>
+                            <div class="completion-date">Completed 2 days ago</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Urgent Task Popup -->
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="urgent-popup" id="urgent-popup">
+        <div class="popup-title">⚠️ HEY!</div>
+        <div class="popup-message">
+            You really should <strong>"Call your sister"</strong> or remove/delegate it.
+            <br><br>
+            <em>Because family matters and she might need support right now</em>
+        </div>
+        <div class="popup-actions">
+            <button class="popup-btn popup-do-it">Do It Now</button>
+            <button class="popup-btn popup-delegate">Delegate</button>
+            <button class="popup-btn popup-remove">Remove</button>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show/hide content
+            document.getElementById('active-tasks').style.display = 'none';
+            document.getElementById('future-tasks').style.display = 'none';
+            document.getElementById('done-tasks').style.display = 'none';
+            
+            document.getElementById(tabName + '-tasks').style.display = 'block';
+        }
+
+        // Enhanced drag and drop functionality for all sections
+        let draggedElement = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskLists = [
+                document.getElementById('active-task-list'),
+                document.getElementById('future-task-list')
+            ];
+            
+            taskLists.forEach(taskList => {
+                if (!taskList) return;
+                
+                taskList.addEventListener('dragstart', function(e) {
+                    if (e.target.classList.contains('task-item')) {
+                        draggedElement = e.target;
+                        e.target.classList.add('dragging');
+                    }
+                });
+
+                taskList.addEventListener('dragend', function(e) {
+                    if (e.target.classList.contains('task-item')) {
+                        e.target.classList.remove('dragging');
+                        draggedElement = null;
+                    }
+                });
+
+                taskList.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    if (!draggedElement) return;
+                    
+                    const afterElement = getDragAfterElement(taskList, e.clientY);
+                    
+                    if (afterElement == null) {
+                        taskList.appendChild(draggedElement);
+                    } else {
+                        taskList.insertBefore(draggedElement, afterElement);
+                    }
+                });
+            });
+
+            // Cross-section drag and drop
+            document.addEventListener('dragover', function(e) {
+                if (!draggedElement) return;
+                
+                const targetList = e.target.closest('.task-list');
+                if (targetList && targetList !== draggedElement.parentNode) {
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('drop', function(e) {
+                if (!draggedElement) return;
+                
+                const targetList = e.target.closest('.task-list');
+                if (targetList && targetList !== draggedElement.parentNode) {
+                    e.preventDefault();
+                    
+                    // Update task styling based on target section
+                    updateTaskStyling(draggedElement, targetList.id);
+                    
+                    const afterElement = getDragAfterElement(targetList, e.clientY);
+                    if (afterElement == null) {
+                        targetList.appendChild(draggedElement);
+                    } else {
+                        targetList.insertBefore(draggedElement, afterElement);
+                    }
+                }
+            });
+        });
+
+        function updateTaskStyling(taskElement, targetListId) {
+            // Remove all urgency classes
+            taskElement.classList.remove('low-urgency', 'medium-urgency', 'high-urgency', 'critical-urgency');
+            
+            if (targetListId === 'active-task-list') {
+                // Add back to active tasks - assign random urgency for demo
+                const urgencies = ['low-urgency', 'medium-urgency'];
+                taskElement.classList.add(urgencies[Math.floor(Math.random() * urgencies.length)]);
+                taskElement.dataset.section = 'active';
+                
+                // Update actions
+                const actions = taskElement.querySelector('.task-actions');
+                actions.innerHTML = `
+                    <button class="action-btn complete-btn" title="Complete">✓</button>
+                    <button class="action-btn edit-btn" title="Edit">✎</button>
+                    <button class="action-btn delete-btn" title="Delete">×</button>
+                `;
+                
+                // Add urgency indicator
+                if (!taskElement.querySelector('.urgency-indicator')) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'urgency-indicator';
+                    indicator.textContent = taskElement.classList.contains('medium-urgency') ? 'Medium' : 'Low';
+                    taskElement.appendChild(indicator);
+                }
+            } else if (targetListId === 'future-task-list') {
+                // Move to future tasks
+                taskElement.dataset.section = 'future';
+                
+                // Update actions
+                const actions = taskElement.querySelector('.task-actions');
+                actions.innerHTML = `
+                    <button class="action-btn activate-btn" title="Move to Active">→</button>
+                    <button class="action-btn edit-btn" title="Edit">✎</button>
+                    <button class="action-btn delete-btn" title="Delete">×</button>
+                `;
+                
+                // Remove urgency indicator
+                const indicator = taskElement.querySelector('.urgency-indicator');
+                if (indicator) indicator.remove();
+            }
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Task completion and actions
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('complete-btn')) {
+                const taskItem = e.target.closest('.task-item');
+                completeTask(taskItem);
+            }
+
+            if (e.target.classList.contains('activate-btn')) {
+                const taskItem = e.target.closest('.task-item');
+                moveToActive(taskItem);
+            }
+
+            if (e.target.classList.contains('delete-btn')) {
+                const taskItem = e.target.closest('.task-item');
+                deleteTask(taskItem);
+            }
+
+            if (e.target.classList.contains('edit-btn')) {
+                const taskItem = e.target.closest('.task-item');
+                editTask(taskItem);
+            }
+        });
+
+        function completeTask(taskItem) {
+            // Animation before moving to done
+            taskItem.style.transform = 'scale(1.1)';
+            taskItem.style.background = '#d4edda';
+            
+            setTimeout(() => {
+                // Move to done section (simplified - in real app would update data)
+                taskItem.remove();
+                
+                // Show completion message (simplified)
+                alert('Great job! Task completed! 🎉');
+            }, 300);
+        }
+
+        function moveToActive(taskItem) {
+            const activeList = document.getElementById('active-task-list');
+            
+            // Update styling for active section
+            updateTaskStyling(taskItem, 'active-task-list');
+            
+            // Move to active list
+            activeList.appendChild(taskItem);
+            
+            // Switch to active tab
+            switchTabProgrammatically('active');
+            
+            // Highlight the moved task
+            taskItem.style.background = '#e3f2fd';
+            setTimeout(() => {
+                taskItem.style.background = '';
+            }, 1000);
+        }
+
+        function deleteTask(taskItem) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                taskItem.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => taskItem.remove(), 300);
+            }
+        }
+
+        function editTask(taskItem) {
+            const titleElement = taskItem.querySelector('.task-title');
+            const whyElement = taskItem.querySelector('.task-why');
+            
+            const newTitle = prompt('Edit task title:', titleElement.textContent);
+            if (newTitle !== null) {
+                titleElement.textContent = newTitle;
+                
+                const newWhy = prompt('Edit why description:', whyElement.textContent);
+                if (newWhy !== null) {
+                    whyElement.textContent = newWhy;
+                }
+            }
+        }
+
+        function switchTabProgrammatically(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tabName === 'active' ? 1 : tabName === 'future' ? 2 : 3})`).classList.add('active');
+
+            // Show/hide content
+            document.getElementById('active-tasks').style.display = 'none';
+            document.getElementById('future-tasks').style.display = 'none';
+            document.getElementById('done-tasks').style.display = 'none';
+            
+            document.getElementById(tabName + '-tasks').style.display = 'block';
+        }
+
+        // Show urgent popup (demo)
+        setTimeout(() => {
+            document.getElementById('popup-overlay').style.display = 'block';
+            document.getElementById('urgent-popup').style.display = 'block';
+        }, 3000);
+
+        // Close popup
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'popup-overlay' || e.target.classList.contains('popup-btn')) {
+                document.getElementById('popup-overlay').style.display = 'none';
+                document.getElementById('urgent-popup').style.display = 'none';
+            }
+        });
+
+        function showAddTaskForm(section = 'active') {
+            const taskTitle = prompt('What task would you like to add?');
+            if (taskTitle) {
+                const taskWhy = prompt('Why are you doing this task? (This helps maintain motivation)');
+                if (taskWhy) {
+                    addNewTask(taskTitle, taskWhy, section);
+                }
+            }
+        }
+
+        function addNewTask(title, why, section) {
+            const taskItem = document.createElement('li');
+            taskItem.className = 'task-item';
+            taskItem.draggable = true;
+            taskItem.dataset.section = section;
+
+            if (section === 'active') {
+                taskItem.classList.add('low-urgency');
+                taskItem.innerHTML = `
+                    <div class="urgency-indicator">Low</div>
+                    <div class="task-title">${title}</div>
+                    <div class="task-why">${why}</div>
+                    <div class="task-actions">
+                        <button class="action-btn complete-btn" title="Complete">✓</button>
+                        <button class="action-btn edit-btn" title="Edit">✎</button>
+                        <button class="action-btn delete-btn" title="Delete">×</button>
+                    </div>
+                `;
+                document.getElementById('active-task-list').appendChild(taskItem);
+            } else {
+                taskItem.classList.add('future-task');
+                taskItem.innerHTML = `
+                    <div class="task-title">${title}</div>
+                    <div class="task-why">${why}</div>
+                    <div class="task-actions">
+                        <button class="action-btn activate-btn" title="Move to Active">→</button>
+                        <button class="action-btn edit-btn" title="Edit">✎</button>
+                        <button class="action-btn delete-btn" title="Delete">×</button>
+                    </div>
+                `;
+                document.getElementById('future-task-list').appendChild(taskItem);
+            }
+
+            // Add entrance animation
+            taskItem.style.opacity = '0';
+            taskItem.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                taskItem.style.transition = 'all 0.3s ease';
+                taskItem.style.opacity = '1';
+                taskItem.style.transform = 'translateY(0)';
+            }, 10);
+        }
+    </script>
+</body>
+</html>
+```
+
+You are a software engineer specialized in frontend dev.
+Evaluate what are the components and the pieces of the code.
+Think step by step on how what's reusable and whats not.
+Migrate this code to the latest version of react.
