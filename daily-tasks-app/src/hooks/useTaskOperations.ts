@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Task, TabType, Urgency, TaskRegularity, URGENCY_LEVELS } from '../types';
+import { Task, TabType, Urgency, TaskRegularity } from '../types';
 import { TaskService } from '../services/TaskService';
 import { useTaskState } from './useTaskState';
 
