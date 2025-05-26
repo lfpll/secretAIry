@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Task, TabType, Urgency, TaskRegularity } from '../types';
+import { Task, TabType, Urgency, TaskRegularity, URGENCY_LEVELS } from '../types';
 import { TaskService } from '../services/TaskService';
 import { useTaskState } from './useTaskState';
 
@@ -77,13 +77,9 @@ export function useTaskOperations() {
       actions.setTasks('future', sortFutureTasks(futureResults));
       actions.setTasks('done', sortDoneTasks(doneResults));
       
-      // Show offline mode indicator if needed
-      if (TaskService.isOffline()) {
-        console.log('🔄 Running in offline mode - using local data');
-      }
     } catch (error: unknown) {
       console.error('Error loading tasks:', error);
-      actions.setError('Unable to load tasks. Using offline mode.');
+      actions.setError('Unable to load tasks. Please check your connection and try again.');
     } finally {
       actions.setLoading(false);
     }
@@ -152,10 +148,6 @@ export function useTaskOperations() {
   }, [actions, loadTasks]);
 
   const deleteTask = useCallback(async (taskId: string, section: TabType): Promise<void> => {
-    if (!window.confirm('Are you sure you want to delete this task?')) {
-      return;
-    }
-    
     try {
       // Optimistic update - remove immediately
       actions.removeTask(section, taskId);
@@ -175,14 +167,28 @@ export function useTaskOperations() {
     regularity?: TaskRegularity,
     plannedDate?: Date
   ): Promise<void> => {
-    const newTask: Task = {
+    // Determine regularity fields based on frontend regularity data
+    let regularity_type: string;
+    let regularity_week_days: string[] | undefined;
+
+    if (regularity && regularity.type === 'weekly') {
+      regularity_type = 'weekly';
+      regularity_week_days = regularity.days || [];
+    } else {
+      // Default for non-recurring tasks
+      regularity_type = 'daily';
+    }
+
+    const newTask: any = {
       id: Date.now().toString(), // Will be replaced by server
       title,
       why,
       urgency,
       section: state.taskFormSection,
-      regularity,
-      plannedDate
+      plannedDate,
+      regularity_type,
+      regularity_in_days: null,
+      regularity_week_days
     };
     
     try {

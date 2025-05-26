@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-type TabType = 'active' | 'future' | 'done';
-type WeekDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+import { TabType, WeekDay, WEEKDAYS, Urgency, URGENCY_LEVELS, RegularityType, REGULARITY_TYPES } from '../types';
 
 interface TaskFormPopupProps {
   section: TabType;
@@ -9,9 +7,9 @@ interface TaskFormPopupProps {
   onSubmit: (
     title: string, 
     why: string, 
-    urgency: 'low' | 'medium' | 'high' | 'critical',
+    urgency: Urgency,
     regularity?: {
-      type: 'weekly' | 'daily';
+      type: RegularityType;
       days?: WeekDay[];
       everyXDays?: number;
     },
@@ -26,11 +24,11 @@ const TaskFormPopup: React.FC<TaskFormPopupProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [why, setWhy] = useState('');
-  const [urgency, setUrgency] = useState<'low' | 'medium' | 'high' | 'critical'>('low');
+  const [urgency, setUrgency] = useState<Urgency>('low');
   
   // Regularity state (for active tasks)
   const [isRecurring, setIsRecurring] = useState(false);
-  const [regularityType, setRegularityType] = useState<'weekly' | 'daily'>('weekly');
+  const [regularityType, setRegularityType] = useState<RegularityType>('weekly');
   const [selectedDays, setSelectedDays] = useState<WeekDay[]>([]);
   const [everyXDays, setEveryXDays] = useState(1);
   
@@ -113,49 +111,20 @@ const TaskFormPopup: React.FC<TaskFormPopupProps> = ({
                 <div className="form-group">
                   <label>Task Urgency</label>
                   <div className="urgency-selector">
-                    <label className={`urgency-option ${urgency === 'low' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="urgency"
-                        value="low"
-                        checked={urgency === 'low'}
-                        onChange={() => setUrgency('low')}
-                      />
-                      <span className="urgency-label low">Low</span>
-                    </label>
-                    
-                    <label className={`urgency-option ${urgency === 'medium' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="urgency"
-                        value="medium"
-                        checked={urgency === 'medium'}
-                        onChange={() => setUrgency('medium')}
-                      />
-                      <span className="urgency-label medium">Medium</span>
-                    </label>
-                    
-                    <label className={`urgency-option ${urgency === 'high' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="urgency"
-                        value="high"
-                        checked={urgency === 'high'}
-                        onChange={() => setUrgency('high')}
-                      />
-                      <span className="urgency-label high">High</span>
-                    </label>
-                    
-                    <label className={`urgency-option ${urgency === 'critical' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="urgency"
-                        value="critical"
-                        checked={urgency === 'critical'}
-                        onChange={() => setUrgency('critical')}
-                      />
-                      <span className="urgency-label critical">Urgent</span>
-                    </label>
+                    {URGENCY_LEVELS.map((level) => (
+                      <label key={level} className={`urgency-option ${urgency === level ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="urgency"
+                          value={level}
+                          checked={urgency === level}
+                          onChange={() => setUrgency(level)}
+                        />
+                        <span className={`urgency-label ${level}`}>
+                          {level === 'critical' ? 'Urgent' : level.charAt(0).toUpperCase() + level.slice(1)}
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
                 
@@ -173,40 +142,32 @@ const TaskFormPopup: React.FC<TaskFormPopupProps> = ({
                   {isRecurring && (
                     <div className="regularity-options">
                       <div className="regularity-type-selector">
-                        <label>
-                          <input
-                            type="radio"
-                            name="regularity-type"
-                            value="weekly"
-                            checked={regularityType === 'weekly'}
-                            onChange={() => setRegularityType('weekly')}
-                          />
-                          <span>Weekly</span>
-                        </label>
-                        <label>
-                          <input
-                            type="radio"
-                            name="regularity-type"
-                            value="daily"
-                            checked={regularityType === 'daily'}
-                            onChange={() => setRegularityType('daily')}
-                          />
-                          <span>Every X Days</span>
-                        </label>
+                        {REGULARITY_TYPES.map((type) => (
+                          <label key={type}>
+                            <input
+                              type="radio"
+                              name="regularity-type"
+                              value={type}
+                              checked={regularityType === type}
+                              onChange={() => setRegularityType(type)}
+                            />
+                            <span>{type === 'weekly' ? 'Weekly' : 'Every X Days'}</span>
+                          </label>
+                        ))}
                       </div>
                       
                       {regularityType === 'weekly' && (
                         <div className="days-selector">
                           <label>Repeat on:</label>
                           <div className="days-buttons">
-                            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                            {WEEKDAYS.map((day) => (
                               <button
                                 key={day}
                                 type="button"
                                 className={`day-button ${selectedDays.includes(day as WeekDay) ? 'selected' : ''}`}
                                 onClick={() => handleDayToggle(day as WeekDay)}
                               >
-                                {day.charAt(0).toUpperCase()}
+                                {day}
                               </button>
                             ))}
                           </div>

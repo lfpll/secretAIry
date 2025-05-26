@@ -1,6 +1,5 @@
 import React from 'react';
-
-type TabType = 'active' | 'future' | 'done';
+import { TabType, TAB_TYPES } from '../types';
 
 interface TabNavigationProps {
   activeTab: TabType;
@@ -8,26 +7,26 @@ interface TabNavigationProps {
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }) => {
+  const getTabLabel = (tab: TabType): string => {
+    switch (tab) {
+      case 'active': return 'Active Tasks';
+      case 'future': return 'Future Tasks';
+      case 'done': return 'Done';
+      default: return tab;
+    }
+  };
+
   return (
     <div className="tabs">
-      <button 
-        className={`tab ${activeTab === 'active' ? 'active' : ''}`} 
-        onClick={() => setActiveTab('active')}
-      >
-        Active Tasks
-      </button>
-      <button 
-        className={`tab ${activeTab === 'future' ? 'active' : ''}`} 
-        onClick={() => setActiveTab('future')}
-      >
-        Future Tasks
-      </button>
-      <button 
-        className={`tab ${activeTab === 'done' ? 'active' : ''}`} 
-        onClick={() => setActiveTab('done')}
-      >
-        Done
-      </button>
+      {TAB_TYPES.map((tab) => (
+        <button 
+          key={tab}
+          className={`tab ${activeTab === tab ? 'active' : ''}`} 
+          onClick={() => setActiveTab(tab)}
+        >
+          {getTabLabel(tab)}
+        </button>
+      ))}
     </div>
   );
 };

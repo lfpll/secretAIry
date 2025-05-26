@@ -33,12 +33,6 @@ function App(): React.JSX.Element {
     loadTasks();
   }, [loadTasks]);
 
-  // Start connection monitoring
-  useEffect(() => {
-    const stopMonitoring = TaskService.startConnectionMonitoring(30000); // Check every 30 seconds
-    return stopMonitoring;
-  }, []);
-
   const handleDragEnd = async (result: DropResult): Promise<void> => {
     const { source, destination } = result;
     if (!destination || source.droppableId === destination.droppableId) {

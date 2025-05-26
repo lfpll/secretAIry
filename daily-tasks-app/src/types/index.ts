@@ -1,11 +1,21 @@
 export type TabType = 'active' | 'future' | 'done';
 
+export const TAB_TYPES: TabType[] = ['active', 'future', 'done'];
+
 export type Urgency = 'low' | 'medium' | 'high' | 'critical';
 
-export type WeekDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+export const URGENCY_LEVELS: Urgency[] = ['low', 'medium', 'high', 'critical'];
+
+export type WeekDay = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
+
+export const WEEKDAYS: WeekDay[] = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+
+export type RegularityType = 'weekly' | 'daily';
+
+export const REGULARITY_TYPES: RegularityType[] = ['weekly', 'daily'];
 
 export interface TaskRegularity {
-  type: 'weekly' | 'daily';
+  type: RegularityType;
   days?: WeekDay[];
   everyXDays?: number;
   lastCompleted?: Date;
