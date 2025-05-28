@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Task, TabType, Urgency, TaskRegularity } from '../types';
+import { Task, TabType, Urgency } from '../types';
 import { TaskService } from '../services/TaskService';
 import { useTaskState } from './useTaskState';
 
@@ -160,36 +160,11 @@ export function useTaskOperations() {
     }
   }, [actions, loadTasks]);
 
-  const createTask = useCallback(async (
-    title: string, 
-    why: string, 
-    urgency: Urgency,
-    regularity?: TaskRegularity,
-    plannedDate?: Date
-  ): Promise<void> => {
-    // Determine regularity fields based on frontend regularity data
-    let regularity_type: string;
-    let regularity_week_days: string[] | undefined;
-
-    if (regularity && regularity.type === 'weekly') {
-      regularity_type = 'weekly';
-      regularity_week_days = regularity.days || [];
-    } else {
-      // Default for non-recurring tasks
-      regularity_type = 'daily';
-    }
-
-    const newTask: any = {
-      id: Date.now().toString(), // Will be replaced by server
-      title,
-      why,
-      urgency,
-      section: state.taskFormSection,
-      plannedDate,
-      regularity_type,
-      regularity_in_days: null,
-      regularity_week_days
-    };
+  const createTask = useCallback(async (taskData: Partial<Task> & { title: string; why: string }): Promise<void> => {
+    const newTask: Task = new Task({
+      ...taskData,
+      section: taskData.section || state.taskFormSection
+    });
     
     try {
       await TaskService.createTask(newTask);
@@ -201,24 +176,13 @@ export function useTaskOperations() {
   }, [state.taskFormSection, refreshSection, actions]);
 
   // API-level update: calls server then refreshes section
-  const updateTask = useCallback(async (
-    taskId: string, 
-    title: string, 
-    why: string, 
-    urgency: Urgency,
-    regularity?: TaskRegularity,
-    plannedDate?: Date
-  ): Promise<void> => {
+  const updateTask = useCallback(async (taskId: string, taskUpdates: Partial<Task>): Promise<void> => {
     if (!state.editTaskData) return;
     
     const updatedTaskData: Task = {
       ...state.editTaskData.task,
-      title,
-      why,
-      urgency,
-      regularity,
-      plannedDate,
-      section: state.editTaskData.section
+      ...taskUpdates,
+      id: taskId, // Ensure ID doesn't change
     };
     
     try {
@@ -269,7 +233,5 @@ export function useTaskOperations() {
     setActiveTab: actions.setActiveTab,
     setTaskForm: actions.setTaskForm,
     setEditForm: actions.setEditForm,
-    setPopup: actions.setPopup,
-    setCurrentTask: actions.setCurrentTask,
   };
 } 

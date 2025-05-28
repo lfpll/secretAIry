@@ -19,13 +19,6 @@ class SectionType(str, Enum):
     FUTURE = "future"
     DONE = "done"       
 
-
-class RegularityType(str, Enum):
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    EVERY_X_DAYS = "everyXDays"
-
-
 class WeekDay(str, Enum):
     MONDAY = "MO"
     TUESDAY = "TU"
@@ -41,24 +34,8 @@ class TaskBase(SQLModel):
     urgency: UrgencyLevel = UrgencyLevel.LOW
     section: SectionType = SectionType.ACTIVE
     plannedDate: Optional[datetime] = None
-    regularity_type: RegularityType
-    regularity_in_days: int | None = None
-    regularity_week_days: Optional[List[WeekDay]] = Field(default=None, sa_column=Column(JSON))
-
-    def validate_regularity(self):
-        if self.regularity_type == RegularityType.DAILY:
-            if self.regularity_in_days is not None:
-                raise ValueError("regularity_in_days is not allowed when regularity_type is DAILY")
-            if self.regularity_week_days is not None:
-                raise ValueError("regularity_week_days is not allowed when regularity_type is DAILY")
-        elif self.regularity_type == RegularityType.WEEKLY:
-            if self.regularity_in_days is not None:
-                raise ValueError("regularity_in_days is not allowed when regularity_type is WEEKLY")
-            if self.regularity_week_days is None:
-                raise ValueError("regularity_week_days is required when regularity_type is WEEKLY")
-        elif self.regularity_type == RegularityType.EVERY_X_DAYS:
-            if self.regularity_in_days is None:
-                raise ValueError("regularity_in_days is required when regularity_type is EVERY_X_DAYS")
+    regularity: Optional[List[WeekDay]] = Field(default=None, sa_column=Column(JSON))
+    is_deleted: bool = False
             
 
 class TaskUpdate(TaskBase):

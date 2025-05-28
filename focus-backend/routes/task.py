@@ -15,14 +15,9 @@ async def create_task(
     session = Depends(get_session)
 ) -> Task:
     """Create a new task."""
+    print(f"Creating task: {task_data.model_dump()}")
     # Convert to dict and handle the regularity field specially
     task_dict = task_data.model_dump()
-    
-    # If regularity exists, convert it to a JSON-serializable dict
-    if task_dict.get('regularity'):
-        # Use json.loads(json.dumps()) to handle datetime serialization
-        regularity_json = json.dumps(task_dict['regularity'], default=str)
-        task_dict['regularity'] = json.loads(regularity_json)
     
     task = Task(**task_dict)
     session.add(task)
@@ -73,7 +68,7 @@ async def delete_existing_task(
     task_id: str = Path(..., description="The ID of the task to delete"),
     session = Depends(get_session)
 ) -> dict:
-    """Delete a task."""
+    """Update task to delete state.So we can track what's deleted"""
     deleted = session.get(Task, task_id)
     
     if not deleted:
@@ -81,8 +76,10 @@ async def delete_existing_task(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail=f"Task with ID {task_id} not found"
         )
-    session.delete(deleted)
+    deleted.is_deleted = True
+    session.add(deleted)
     session.commit()
+
     return {"message": f"Task with ID {task_id} deleted"}
 
 @task_router.post("/{task_id}/complete")

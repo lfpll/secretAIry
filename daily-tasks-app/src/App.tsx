@@ -1,15 +1,12 @@
 import React, { useEffect } from 'react';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import './App.css';
 import TaskList from './components/TaskList';
 import Header from './components/Header';
 import TabNavigation from './components/TabNavigation';
-import UrgentPopup from './components/UrgentPopup';
 import TaskFormPopup from './components/TaskFormPopup';
 import EditTaskPopup from './components/EditTaskPopup';
 import { useTaskOperations } from './hooks/useTaskOperations';
-import { TaskService } from './services/TaskService';
-import { Task, TabType } from './types';
+import { TabType } from './types';
 
 function App(): React.JSX.Element {
   const {
@@ -25,48 +22,79 @@ function App(): React.JSX.Element {
     setActiveTab,
     setTaskForm,
     setEditForm,
-    setPopup,
   } = useTaskOperations();
+
+  // Tab configuration
+  const tabConfig = {
+    active: {
+      id: 'active-tasks',
+      className: 'tab-content',
+      tasks: state.activeTasks,
+      buttonText: '+ Add New Task',
+      showAddButton: true,
+      taskListProps: {
+        onComplete: completeTask,
+        onEdit: editTask,
+        onDelete: deleteTask,
+      }
+    },
+    future: {
+      id: 'future-tasks', 
+      className: 'tab-content future-section',
+      tasks: state.futureTasks,
+      buttonText: '+ Add Future Task',
+      showAddButton: true,
+      taskListProps: {
+        onActivate: moveToActive,
+        onEdit: editTask,
+        onDelete: deleteTask,
+      }
+    },
+    done: {
+      id: 'done-tasks',
+      className: 'tab-content done-section', 
+      tasks: state.doneTasks,
+      buttonText: '',
+      showAddButton: false,
+      taskListProps: {}
+    }
+  } as const;
+
+  const renderTabContent = (tabType: TabType) => {
+    const config = tabConfig[tabType];
+    const isVisible = state.activeTab === tabType;
+    
+    return (
+      <div 
+        key={tabType}
+        id={config.id} 
+        className={config.className} 
+        style={{ display: isVisible ? 'block' : 'none' }}
+      >
+        {config.showAddButton && (
+          <div className="add-task">
+            <button 
+              className="add-task-btn" 
+              onClick={() => showAddTaskForm(tabType)}
+            >
+              {config.buttonText}
+            </button>
+          </div>
+        )}
+        
+        <TaskList
+          tasks={config.tasks}
+          section={tabType}
+          {...config.taskListProps}
+        />
+      </div>
+    );
+  };
 
   // Load tasks on mount
   useEffect(() => {
     loadTasks();
   }, [loadTasks]);
-
-  const handleDragEnd = async (result: DropResult): Promise<void> => {
-    const { source, destination } = result;
-    if (!destination || source.droppableId === destination.droppableId) {
-      return; // Same list reordering is handled automatically by sorting
-    }
-
-    const sourceSection: TabType = source.droppableId.replace('Tasks', '') as TabType;
-    const destSection: TabType = destination.droppableId.replace('Tasks', '') as TabType;
-    
-    const taskArrays: Record<TabType, Task[]> = {
-      active: state.activeTasks,
-      future: state.futureTasks,
-      done: state.doneTasks
-    };
-    
-    const task: Task = taskArrays[sourceSection][source.index];
-    if (!task) return;
-
-    try {
-      if (destSection === 'done') {
-        await completeTask(task.id);
-      } else if (destSection === 'active') {
-        await moveToActive(task.id);
-      } else {
-        // Move to future
-        const updatedTask: Task = { ...task, section: 'future' as const };
-        await TaskService.updateTask(task.id, updatedTask);
-        await loadTasks(); // Refresh to get proper sorting
-      }
-    } catch (error: unknown) {
-      console.error('Error during drag and drop:', error);
-      await loadTasks(); // Refresh to restore consistent state
-    }
-  };
 
   if (state.isLoading) {
     return <div className="loading">Loading tasks...</div>;
@@ -87,73 +115,12 @@ function App(): React.JSX.Element {
         />
         
         <div className="content-area">
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div id="active-tasks" className="tab-content" style={{ display: state.activeTab === 'active' ? 'block' : 'none' }}>
-              <div className="add-task">
-                <button 
-                  className="add-task-btn" 
-                  onClick={() => showAddTaskForm('active')}
-                >
-                  + Add New Task
-                </button>
-              </div>
-              
-              <TaskList
-                tasks={state.activeTasks}
-                section="active"
-                onComplete={completeTask}
-                onEdit={editTask}
-                onDelete={deleteTask}
-                droppableId="activeTasks"
-              />
-            </div>
-            
-            <div id="future-tasks" className="tab-content future-section" style={{ display: state.activeTab === 'future' ? 'block' : 'none' }}>
-              <div className="add-task">
-                <button 
-                  className="add-task-btn" 
-                  onClick={() => showAddTaskForm('future')}
-                >
-                  + Add Future Task
-                </button>
-              </div>
-              
-              <TaskList
-                tasks={state.futureTasks}
-                section="future"
-                onActivate={moveToActive}
-                onEdit={editTask}
-                onDelete={deleteTask}
-                droppableId="futureTasks"
-              />
-            </div>
-            
-            <div id="done-tasks" className="tab-content done-section" style={{ display: state.activeTab === 'done' ? 'block' : 'none' }}>
-              <TaskList
-                tasks={state.doneTasks}
-                section="done"
-                droppableId="doneTasks"
-              />
-            </div>
-          </DragDropContext>
+          {renderTabContent('active')}
+          {renderTabContent('future')}
+          {renderTabContent('done')}
         </div>
       </div>
       
-      {state.showPopup && state.currentTask && (
-        <UrgentPopup 
-          task={state.currentTask}
-          onClose={() => setPopup(false)}
-          onComplete={() => {
-            completeTask(state.currentTask!.id);
-            setPopup(false);
-          }}
-          onRemove={() => {
-            deleteTask(state.currentTask!.id, 'active');
-            setPopup(false);
-          }}
-        />
-      )}
-
       {state.showTaskForm && (
         <TaskFormPopup
           section={state.taskFormSection}

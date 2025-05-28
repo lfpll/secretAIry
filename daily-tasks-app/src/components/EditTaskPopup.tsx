@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Task, TabType, WeekDay, WEEKDAYS, Urgency, URGENCY_LEVELS, RegularityType, REGULARITY_TYPES } from '../types';
+import { Task, TabType, WeekDay, WEEKDAYS, Urgency, URGENCY_LEVELS } from '../types';
 
 interface EditTaskPopupProps {
   task: Task;
   section: TabType;
   onClose: () => void;
-  onSubmit: (
-    taskId: string, 
-    title: string, 
-    why: string, 
-    urgency: Urgency,
-    regularity?: {
-      type: RegularityType;
-      days?: WeekDay[];
-      everyXDays?: number;
-    },
-    plannedDate?: Date
-  ) => void;
+  onSubmit: (taskId: string, taskUpdates: Partial<Task> & { title: string; why: string }) => void;
 }
 
 const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
@@ -30,15 +19,9 @@ const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
   const [urgency, setUrgency] = useState<Urgency>(task.urgency);
 
   // Regularity state (for active tasks)
-  const [isRecurring, setIsRecurring] = useState(!!task.regularity);
-  const [regularityType, setRegularityType] = useState<RegularityType>(
-    task.regularity?.type || 'weekly'
-  );
+  const [isRecurring, setIsRecurring] = useState(!!task.regularity && task.regularity.length > 0);
   const [selectedDays, setSelectedDays] = useState<WeekDay[]>(
-    task.regularity?.days || []
-  );
-  const [everyXDays, setEveryXDays] = useState(
-    task.regularity?.everyXDays || 1
+    task.regularity || []
   );
   
   // Planned date state (for future tasks)
@@ -66,13 +49,9 @@ const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
     e.preventDefault();
     if (title.trim() === '' || why.trim() === '') return;
     
-    let regularityData = undefined;
-    if (section === 'active' && isRecurring) {
-      regularityData = {
-        type: regularityType,
-        days: regularityType === 'weekly' ? selectedDays : undefined,
-        everyXDays: regularityType === 'daily' ? everyXDays : undefined,
-      };
+    let regularityWeekDaysData = undefined;
+    if (section === 'active' && isRecurring && selectedDays.length > 0) {
+      regularityWeekDaysData = selectedDays;
     }
     
     let plannedDateData = undefined;
@@ -80,7 +59,13 @@ const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
       plannedDateData = new Date(plannedDate);
     }
     
-    onSubmit(task.id, title, why, urgency, regularityData, plannedDateData);
+    onSubmit(task.id, {
+      title,
+      why,
+      urgency,
+      regularity: regularityWeekDaysData,
+      plannedDate: plannedDateData
+    });
     onClose();
   };
 
@@ -149,55 +134,20 @@ const EditTaskPopup: React.FC<EditTaskPopupProps> = ({
                   </div>
                   
                   {isRecurring && (
-                    <div className="regularity-options">
-                      <div className="regularity-type-selector">
-                        {REGULARITY_TYPES.map((type) => (
-                          <label key={type}>
-                            <input
-                              type="radio"
-                              name="regularity-type"
-                              value={type}
-                              checked={regularityType === type}
-                              onChange={() => setRegularityType(type)}
-                            />
-                            <span>{type === 'weekly' ? 'Weekly' : 'Every X Days'}</span>
-                          </label>
+                    <div className="days-selector">
+                      <label>Repeat on:</label>
+                      <div className="days-buttons">
+                        {WEEKDAYS.map((day) => (
+                          <button
+                            key={day}
+                            type="button"
+                            className={`day-button ${selectedDays.includes(day as WeekDay) ? 'selected' : ''}`}
+                            onClick={() => handleDayToggle(day as WeekDay)}
+                          >
+                            {day}
+                          </button>
                         ))}
                       </div>
-                      
-                      {regularityType === 'weekly' && (
-                        <div className="days-selector">
-                          <label>Repeat on:</label>
-                          <div className="days-buttons">
-                            {WEEKDAYS.map((day) => (
-                              <button
-                                key={day}
-                                type="button"
-                                className={`day-button ${selectedDays.includes(day as WeekDay) ? 'selected' : ''}`}
-                                onClick={() => handleDayToggle(day as WeekDay)}
-                              >
-                                {day}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {regularityType === 'daily' && (
-                        <div className="every-x-days">
-                          <label>Repeat every:</label>
-                          <div className="x-days-input">
-                            <input
-                              type="number"
-                              min="1"
-                              max="365"
-                              value={everyXDays}
-                              onChange={(e) => setEveryXDays(Math.max(1, parseInt(e.target.value) || 1))}
-                            />
-                            <span>days</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

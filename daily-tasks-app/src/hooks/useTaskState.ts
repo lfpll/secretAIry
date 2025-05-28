@@ -8,12 +8,10 @@ interface TaskState {
   isLoading: boolean;
   loadingError: string | null;
   activeTab: TabType;
-  showPopup: boolean;
   showTaskForm: boolean;
   showEditForm: boolean;
   taskFormSection: TabType;
   editTaskData: { task: Task; section: TabType } | null;
-  currentTask: Task | null;
 }
 
 interface TaskActions {
@@ -22,15 +20,11 @@ interface TaskActions {
   setActiveTab: (tab: TabType) => void;
   setTasks: (section: TabType, tasks: Task[]) => void;
   addTask: (section: TabType, task: Task) => void;
-  updateTaskInState: (section: TabType, task: Task) => void;
   removeTask: (section: TabType, taskId: string) => void;
-  moveTask: (from: TabType, to: TabType, task: Task) => void;
-  setPopup: (show: boolean) => void;
   setTaskForm: (show: boolean) => void;
   setEditForm: (show: boolean) => void;
   setTaskFormSection: (section: TabType) => void;
   setEditTaskData: (data: { task: Task; section: TabType } | null) => void;
-  setCurrentTask: (task: Task | null) => void;
 }
 
 interface UseTaskStateReturn {
@@ -46,12 +40,10 @@ export function useTaskState(): UseTaskStateReturn {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('active');
-  const [showPopup, setShowPopup] = useState<boolean>(false);
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
   const [taskFormSection, setTaskFormSection] = useState<TabType>('active');
   const [editTaskData, setEditTaskData] = useState<{ task: Task; section: TabType } | null>(null);
-  const [currentTask, setCurrentTask] = useState<Task | null>(null);
 
   // Consolidated state object
   const state: TaskState = {
@@ -61,12 +53,10 @@ export function useTaskState(): UseTaskStateReturn {
     isLoading,
     loadingError,
     activeTab,
-    showPopup,
     showTaskForm,
     showEditForm,
     taskFormSection,
     editTaskData,
-    currentTask,
   };
 
   // Direct function implementations - Easy to navigate to!
@@ -110,24 +100,6 @@ export function useTaskState(): UseTaskStateReturn {
     }
   }, []);
 
-  // State-level update: only updates local state, no API call
-  const updateTaskInState = useCallback((section: TabType, updatedTask: Task): void => {
-    const updateTaskInList = (tasks: Task[]) => 
-      tasks.map(task => task.id === updatedTask.id ? updatedTask : task);
-
-    switch (section) {
-      case 'active':
-        setActiveTasks(updateTaskInList);
-        break;
-      case 'future':
-        setFutureTasks(updateTaskInList);
-        break;
-      case 'done':
-        setDoneTasks(updateTaskInList);
-        break;
-    }
-  }, []);
-
   const removeTask = useCallback((section: TabType, taskId: string): void => {
     const filterTask = (tasks: Task[]) => tasks.filter(task => task.id !== taskId);
 
@@ -142,17 +114,6 @@ export function useTaskState(): UseTaskStateReturn {
         setDoneTasks(filterTask);
         break;
     }
-  }, []);
-
-  const moveTask = useCallback((from: TabType, to: TabType, task: Task): void => {
-    // Remove from source
-    removeTask(from, task.id);
-    // Add to destination
-    addTask(to, task);
-  }, [removeTask, addTask]);
-
-  const setPopupAction = useCallback((show: boolean): void => {
-    setShowPopup(show);
   }, []);
 
   const setTaskFormAction = useCallback((show: boolean): void => {
@@ -171,26 +132,18 @@ export function useTaskState(): UseTaskStateReturn {
     setEditTaskData(data);
   }, []);
 
-  const setCurrentTaskAction = useCallback((task: Task | null): void => {
-    setCurrentTask(task);
-  }, []);
-
   const actions: TaskActions = useMemo(() => ({
     setLoading,
     setError,
     setActiveTab: setActiveTabAction,
     setTasks,
     addTask,
-    updateTaskInState,
-    removeTask,      
-    moveTask,
-    setPopup: setPopupAction,
+    removeTask,
     setTaskForm: setTaskFormAction,
     setEditForm: setEditFormAction,
     setTaskFormSection: setTaskFormSectionAction,
     setEditTaskData: setEditTaskDataAction,
-    setCurrentTask: setCurrentTaskAction,
-  }), [setLoading, setError, setActiveTabAction, setTasks, addTask, updateTaskInState, removeTask, moveTask, setPopupAction, setTaskFormAction, setEditFormAction, setTaskFormSectionAction, setEditTaskDataAction, setCurrentTaskAction]);
+  }), [setLoading, setError, setActiveTabAction, setTasks, addTask, removeTask, setTaskFormAction, setEditFormAction, setTaskFormSectionAction, setEditTaskDataAction]);
 
   return { state, actions };
 } 

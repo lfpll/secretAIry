@@ -1,4 +1,4 @@
-import { TaskRegularity } from '../types';
+import { WeekDay } from '../types';
 
 /**
  * Format completion date for display
@@ -23,53 +23,38 @@ export const formatCompletionDate = (date: Date): string => {
  * Format planned date for display
  */
 export const formatPlannedDate = (date: Date): string => {
-  const today: Date = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const plannedDate: Date = new Date(date);
-  plannedDate.setHours(0, 0, 0, 0);
-  
-  const diffTime: number = plannedDate.getTime() - today.getTime();
-  const diffDays: number = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const now: Date = new Date();
+  const diffTime: number = date.getTime() - now.getTime();
+  const diffDays: number = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays === 0) {
     return 'Today';
   } else if (diffDays === 1) {
     return 'Tomorrow';
-  } else if (diffDays > 1 && diffDays < 7) {
-    return `In ${diffDays} days`;
+  } else if (diffDays === -1) {
+    return 'Yesterday (overdue)';
+  } else if (diffDays < -1) {
+    return `${Math.abs(diffDays)} days overdue`;
+  } else if (diffDays <= 7) {
+    const dayNames: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return dayNames[date.getDay()];
   } else {
-    const options: Intl.DateTimeFormatOptions = { 
-      month: 'short', 
-      day: 'numeric',
-      year: plannedDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
-    };
-    return plannedDate.toLocaleDateString(undefined, options);
+    return date.toLocaleDateString();
   }
 };
 
 /**
  * Format regularity information for display
  */
-export const formatRegularity = (regularity?: TaskRegularity): string | null => {
-  if (!regularity) return null;
+export const formatRegularity = (regularityWeekDays?: WeekDay[]): string | null => {
+  if (!regularityWeekDays || regularityWeekDays.length === 0) return null;
   
-  if (regularity.type === 'weekly' && regularity.days && regularity.days.length > 0) {
-    if (regularity.days.length === 7) {
-      return 'Every day';
-    } else {
-      const shortDays: string = regularity.days
-        .map((day: string) => day.charAt(0).toUpperCase())
-        .join(', ');
-      return `Weekly on ${shortDays}`;
-    }
-  } else if (regularity.type === 'daily' && regularity.everyXDays) {
-    if (regularity.everyXDays === 1) {
-      return 'Every day';
-    } else {
-      return `Every ${regularity.everyXDays} days`;
-    }
+  if (regularityWeekDays.length === 7) {
+    return 'Every day';
+  } else {
+    const shortDays: string = regularityWeekDays
+      .map((day: WeekDay) => day.charAt(0).toUpperCase())
+      .join(', ');
+    return `Weekly on ${shortDays}`;
   }
-  
-  return null;
 }; 
