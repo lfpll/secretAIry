@@ -1,0 +1,52 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+*.so
+*.egg-info/
+build/
+dist/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing and coverage
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+
+# Development databases (keep only in development)
+*.db
+*.sqlite
+*.sqlite3
+
+# Git files
+.git/
+.gitignore
+
+# Development logs
+nohup.out
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Docker files (avoid recursion)
+Dockerfile*
+.dockerignore
+
+# Documentation and scripts not needed in production
+README.md
+get-docker.sh
+*.md 
