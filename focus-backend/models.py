@@ -2,7 +2,7 @@ from enum import Enum
 import os
 import uuid
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 from sqlmodel import Field, SQLModel, JSON, Column
 from sqlalchemy import ARRAY, String
