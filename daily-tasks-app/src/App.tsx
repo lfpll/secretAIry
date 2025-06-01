@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import './App.css';
 import TaskList from './components/TaskList';
-import Header from './components/Header';
 import TabNavigation from './components/TabNavigation';
 import TaskFormPopup from './components/TaskFormPopup';
 import EditTaskPopup from './components/EditTaskPopup';
@@ -106,7 +105,6 @@ function App(): React.JSX.Element {
 
   return (
     <div className="app-container">
-      <Header />
       
       <div className="main-content">
         <TabNavigation 
