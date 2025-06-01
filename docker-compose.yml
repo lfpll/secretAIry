@@ -43,6 +43,7 @@ services:
       - "8000:8000"
     environment:
       - CONN_STRING=postgresql://taskuser:taskpass@postgres:5432/tasks_db
+      - REACT_APP_API_URL=http://localhost:8000/
     depends_on:
       postgres:
         condition: service_healthy
