@@ -16,6 +16,16 @@ services:
       timeout: 5s
       retries: 5
 
+  # Build React app to static files
+  frontend-builder:
+    build:
+      context: ./daily-tasks-app  
+      dockerfile: Dockerfile.build
+    container_name: tasks_frontend_builder
+    volumes:
+      - react_build:/app/build
+    command: npm run build
+
   backend:
     build:
       context: ./focus-backend
@@ -28,6 +38,7 @@ services:
     container_name: tasks_backend
     volumes:
       - ./focus-backend:/app
+      - react_build:/app/static  # Mount React build files to backend static directory
     ports:
       - "8000:8000"
     environment:
@@ -35,30 +46,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      frontend-builder:
+        condition: service_completed_successfully
     command: ["uv","run","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
-  frontend:
-    build:
-      context: ./daily-tasks-app  
-      dockerfile: Dockerfile
-      x-bake:
-        platforms:
-          - linux/amd64
-          - linux/arm64
-    network_mode: "host"
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    container_name: tasks_frontend
-    volumes:
-      - ./daily-tasks-app:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://0.0.0.0:8000
-    depends_on:
-      - backend
-
 volumes:
-  postgres_data: 
+  postgres_data:
+  react_build:  # Volume to store React build files 
