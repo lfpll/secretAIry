@@ -1,6 +1,6 @@
 import { Task, TabType, TaskBase } from '../types';
 
-const API_BASE_URL: string = process.env.REACT_APP_API_URL || 'http://0.0.0.0:8000';
+const API_BASE_URL: string = process.env.REACT_APP_API_URL || window.location.origin;
 
 const processTaskDates = (task: any): Task => ({
   ...task,
