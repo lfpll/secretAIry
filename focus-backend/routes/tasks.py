@@ -12,19 +12,20 @@ tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 def get_current_weekday() -> WeekDay:
     day = datetime.now().weekday()
-    if day == 1:
+    print(day)
+    if day == 0:
         return WeekDay.MONDAY
-    if day == 2:
+    if day == 1:
         return WeekDay.TUESDAY
-    if day == 3:
+    if day == 2:
         return WeekDay.WEDNESDAY
-    if day == 4:
+    if day == 3:
         return WeekDay.THURSDAY
-    if day == 5:
+    if day == 4:
         return WeekDay.FRIDAY
-    if day == 6:
+    if day == 5:
         return WeekDay.SATURDAY
-    if day == 7:
+    if day == 6:
         return WeekDay.SUNDAY
     else:
         raise ValueError(f"Weekday for {day} doesn't exist")
