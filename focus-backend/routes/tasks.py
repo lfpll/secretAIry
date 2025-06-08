@@ -41,7 +41,7 @@ async def get_tasks(
     tasks = session.exec(statement).all()
     if section == SectionType.ACTIVE:
         day = get_current_weekday()
-        statement = select(Task).where(text(f"task.section = 'DONE' AND '{day.value}'  IN (SELECT json_array_elements_text(task.regularity))"))
+        statement = select(Task).where(text(f"task.section = 'DONE' AND task.regularity IS NOT NULL AND '{day.value}'  IN (SELECT json_array_elements_text(task.regularity))"))
         regular_tasks = session.exec(statement).all()
         tasks.extend(regular_tasks)
     
