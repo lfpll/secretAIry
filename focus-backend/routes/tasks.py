@@ -43,7 +43,10 @@ async def get_tasks(
         day = get_current_weekday()
         statement = select(Task).where(text(f"task.section = 'DONE' AND json_strip_nulls(regularity) is null AND '{day.value}'  IN (SELECT json_array_elements_text(task.regularity))"))
         regular_tasks = session.exec(statement).all()
+        statement = select(Task).where(text(f"task.section = 'FUTURE' AND task.completedAt is null and task.plannedDate is not null and task.plannedDate >= '{datetime.now().date()}'"))
+        future_tasks = session.exec(statement).all()
         tasks.extend(regular_tasks)
+        tasks.extend(future_tasks)
     
     return tasks
 
